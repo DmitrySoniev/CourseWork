@@ -70,7 +70,7 @@ void Managers::CheckScore(char ScreenParticles[30][21], int BirdX)
 		}
 	}
 }
-void Managers::OutputScore()
+void Managers::OutputScore() // Запись рекорда в файл
 {
 	if (!ErrorDetection)
 	{

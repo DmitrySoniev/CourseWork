@@ -33,10 +33,6 @@ void Screen();
 
 void Pipes();
 
-bool GameOver();
-
-void CheckScore();
-
 void SetColor(int);
 
 void SetBackColor();
@@ -65,16 +61,16 @@ int main()
 
 	manager->InputHighscore();
 
-	int a = 0;
+	int HowManyTimesPlayed = 0;
 
 	char Selection;
 
 	while (true)
 	{
-		if (a == 0)
+		if (HowManyTimesPlayed == 0)
 			goto play;
 
-		if (a > 0)
+		if (HowManyTimesPlayed > 0)
 		{
 			int scores = 0;
 
@@ -123,7 +119,7 @@ int main()
 			goto play;
 		}
 		}
-		a++;
+		HowManyTimesPlayed++;
 	}
 quit:
 	{
@@ -135,9 +131,9 @@ quit:
 
 void Game()
 {
-	int x, y;
+	int x;
 
-	for (y = 0; y < 21; y++)
+	for (int y = 0; y < 21; y++)// Установка экрана
 	{
 		for (x = 0; x < 30; x++)
 		{
@@ -156,7 +152,7 @@ void Game()
 		}
 	}
 
-	ScreenParticles[10][10] = '*';
+	ScreenParticles[10][10] = '*';// В этих координатах будет птица
 
 	Screen();
 
@@ -170,11 +166,11 @@ void Game()
 		{
 			const char s = _getch();
 
-			if (s != '~')
-				bird->SetTuk(1);
+			if (s == ' ')
+				bird->SetKeyPressed(1); // Если нажат пробел то функция устанавливает еденицу, это значит то что птица взлетит
 		}
 
-		for (x = 0; x < 30; x++)
+		for (x = 0; x < 30; x++)// Установка земли
 		{
 			ScreenParticles[x][20] = '-';
 
@@ -187,7 +183,7 @@ void Game()
 
 		manager->CheckScore(ScreenParticles, birdX);
 
-		if (bird->GameOver(ScreenParticles, ScreenCheck))
+		if (bird->GameOver(ScreenParticles, ScreenCheck))// Проверка если птица ударилась об трубы
 		{
 			system("cls");
 			goto gameEnd;
@@ -240,16 +236,16 @@ void Pipes()
 
 	if (NumberOfDifficulty == 1)
 	{
-		if (Time == 10)
+		if (Time == 10) // если цикл прошел 10 раз, создает новую трубу
 		{
 			RandomHole = (rand() % 11) + 5; //генерирует рандомной число, которое будет отвечать где устанвоится дыра для труб
 			for (y = 0; y < 20; y++)
 			{
-				ScreenParticles[29][y] = '|';
+				ScreenParticles[29][y] = '|'; // устанавливает трубы
 
 				ScreenCheck[29][y] = 2;
 			}
-			ScreenParticles[29][RandomHole - 1] = ' ';
+			ScreenParticles[29][RandomHole - 1] = ' ';// устанавливает трубу
 
 			ScreenParticles[29][RandomHole] = ' ';
 
@@ -268,17 +264,15 @@ void Pipes()
 			ScreenParticles[29][RandomHole + 2] = ' ';
 
 			Time = 0;
-
-			goto ed;
 		}
 		else goto ed;
-	ed:
+	ed: // передвижение труб
 		{
 			for (y = 0; y < 20; y++)
 			{
 				for (x = 0; x < 30; x++)
 				{
-					if (ScreenParticles[x][y] == '|')
+					if (ScreenParticles[x][y] == '|') // Все трубы передвигаются влево на 1
 					{
 						if (x > 0)
 						{
@@ -291,7 +285,7 @@ void Pipes()
 							ScreenCheck[x][y] = 0;
 						}
 
-						if (x == 0)
+						if (x == 0) // если заканчивается экран  трубы исчезают, чтобы предотвратить ошибки
 						{
 							ScreenParticles[x][y] = ' ';
 
@@ -327,8 +321,6 @@ void Pipes()
 			ScreenCheck[29][RandomHole + 1] = 0;
 
 			Time = 0;
-
-			goto md;
 		}
 		else goto md;
 	md:
@@ -384,8 +376,6 @@ void Pipes()
 			ScreenCheck[29][RandomHole + 1] = 0;
 
 			Time = 0;
-
-			goto hd;
 		}
 		else goto hd;
 	hd:

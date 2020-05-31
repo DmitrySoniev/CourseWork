@@ -6,29 +6,32 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include "Managers.h"
 
 using namespace std;
-
-ifstream Input;
-
-ofstream Output;
 
 char ScreenParticles[30][21]; // переменная для хранения частиц экрана (пикселей)
 
 int ScreenCheck[30][21];
 
-int Highscore;
+//int Highscore;
 
 int NumberOfDifficulty;
 
 int tuk = 0;
-int Score = 0;
+//int Score = 0;
 int Time = 0;// переменная для проверки сколько раз был пройден цикл while
 int bt = 0;
 
 bool ErrorDetection;
 
 void Game();
+
+void Menu();
+
+void EndGame();
+
+void Difficulty();
 
 void Screen();
 
@@ -42,11 +45,7 @@ void SetColor(int);
 
 void SetBackColor();
 
-void Menu();
-
-void Difficulty();
-
-void EndGame();
+Managers* manager = new Managers;
 
 class Bird
 {
@@ -141,18 +140,7 @@ public:
 			}
 		}
 	}
-	void CheckScore()
-	{
-		for (int y = 0; y < 20; y++)
-		{
-			if (ScreenParticles[BirdX][y] == '|')
-			{
-				Score++;
 
-				return;
-			}
-		}
-	}
 	bool GameOver()
 	{
 		int f = 0;
@@ -179,9 +167,6 @@ public:
 		return f == 1;
 	}
 };
-class Manager
-{
-};
 int main()
 {
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -198,28 +183,11 @@ int main()
 
 	SetConsoleOutputCP(1251);
 
-	/*SetConsoleTextAttribute(handle, 11);*/
-
-	/*system("color ");*/
-
 	srand(time(0));
 
-	Input.open("C:/FlappyBird/Score.txt");
+	/*manager->InputHighscore();*/
 
-	if (Input.is_open())
-	{
-		Input >> Highscore;
-
-		Input.close();
-
-		ErrorDetection = false;
-	}
-	else
-	{
-		Highscore = 0;
-
-		ErrorDetection = true;
-	}
+	manager->InputHighscore();
 
 	int a = 0;
 
@@ -232,14 +200,19 @@ int main()
 
 		if (a > 0)
 		{
-			Score = 0;
+			int scores = 0;
+
+			manager->SetScore(scores);
 
 			cout << "Хотите ли вы сыграть снова? [y/n] ";
 
 			cin >> Selection;
 
 			if (Selection == 'y')
+			{
+				system("cls");
 				goto play;
+			}
 
 			if (Selection == 'n')
 				goto quit;
@@ -265,7 +238,6 @@ int main()
 		case '1':
 		{
 			Difficulty();
-
 			cin >> NumberOfDifficulty;
 
 			system("cls");
@@ -345,21 +317,19 @@ void Game()
 		}
 
 		bird.BirdMovement();
+		int x;
+		x = bird.BirdX;
 
-		bird.CheckScore();
+		manager->CheckScore(ScreenParticles, x);
 
 		if (bird.GameOver())
 		{
 			system("cls");
-
 			goto gameEnd;
 		}
 
 		Pipes();
-
-		if (Score > Highscore)
-			Highscore = Score;
-
+		manager->CheckingScore();
 		Screen();
 
 		if (tuk > 0)
@@ -370,18 +340,7 @@ void Game()
 	}
 gameEnd:
 	{
-		if (Score > Highscore)
-			Highscore = Score;
-
-		if (ErrorDetection == false)
-		{
-			Output.open("C:/FlappyBird/Score.txt");
-
-			Output << Highscore;
-
-			Output.close();
-		}
-
+		manager->OutputScore();
 		EndGame();
 	}
 }
@@ -402,14 +361,16 @@ void Screen()
 	{
 		for (int x = 0; x < 30; x++)
 		{
-			if (x < 29) cout << ScreenParticles[x][y];
+			if (x < 29)
+				cout << ScreenParticles[x][y];
 
-			if (x == 29) cout << ScreenParticles[x][y] << endl;
+			if (x == 29)
+				cout << ScreenParticles[x][y] << endl;
 		}
 	}
 	cout << "" << endl;
 
-	cout << "Ваш счёт: " << Score;
+	cout << "Ваш счёт: " << manager->GetScore();
 
 	//SetColor(11);
 }
@@ -642,7 +603,7 @@ void Menu()
 	cout << " --------------------------------------------------------  " << endl;
 	SetColor(15);
 	moveto(20, 10);
-	cout << "Рекорд: " << Highscore;
+	cout << "Рекорд: " << manager->GetHighScore();
 	moveto(20, 12);
 	cout << "Меню";
 	SetColor(11);
@@ -677,8 +638,8 @@ void EndGame()
 	cout << " --------------------------------------------------------------------------" << endl;
 	SetColor(3);
 	moveto(30, 10);
-	cout << "Ваш счёт: " << Score << "\n";
+	cout << "Ваш счёт: " << manager->GetScore() << "\n";
 
 	moveto(30, 12);
-	cout << "Максимальный рекорд: " << Highscore << endl << endl;
+	cout << "Максимальный рекорд: " << manager->GetHighScore() << endl << endl;
 }

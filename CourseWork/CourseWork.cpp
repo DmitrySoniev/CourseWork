@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include "Managers.h"
+#include "Birds.h"
 
 using namespace std;
 
@@ -14,14 +15,9 @@ char ScreenParticles[30][21]; // переменная для хранения ч
 
 int ScreenCheck[30][21];
 
-//int Highscore;
-
 int NumberOfDifficulty;
 
-int tuk = 0;
-//int Score = 0;
 int Time = 0;// переменная для проверки сколько раз был пройден цикл while
-int bt = 0;
 
 bool ErrorDetection;
 
@@ -47,126 +43,8 @@ void SetBackColor();
 
 Managers* manager = new Managers;
 
-class Bird
-{
-public:
-	int BirdX = 0;
-	int BirdY = 0;
-	int x, y;
+Birds* bird = new Birds;
 
-	void BirdMovement()
-	{
-		if (tuk > 0)
-		{
-			bt = 0;
-
-			for (y = 0; y < 20; y++)
-			{
-				for (x = 0; x < 30; x++)
-				{
-					if (ScreenParticles[x][y] == '*')
-					{
-						if (y > 0)
-						{
-							ScreenParticles[x][y - 1] = '*';
-
-							ScreenParticles[x][y] = ' ';
-
-							BirdX = x;
-
-							BirdY = y - 1;
-
-							return;
-						}
-					}
-				}
-			}
-		}
-		else
-		{
-			bt++;
-
-			for (y = 0; y < 20; y++)
-			{
-				for (x = 0; x < 30; x++)
-				{
-					if (ScreenParticles[x][y] == '*')
-					{
-						if (y < 20)
-						{
-							if (bt < 3)
-							{
-								ScreenParticles[x][y + 1] = '*';
-
-								ScreenParticles[x][y] = ' ';
-
-								BirdX = x;
-
-								BirdY = y + 1;
-
-								return;
-							}
-							else if (bt > 2 && bt < 5)
-							{
-								ScreenParticles[x][y + 2] = '*';
-
-								ScreenParticles[x][y] = ' ';
-
-								BirdX = x;
-
-								BirdY = y + 2;
-
-								return;
-							}
-							else if (bt > 4)
-							{
-								ScreenParticles[x][y + 3] = '*';
-
-								ScreenParticles[x][y] = ' ';
-
-								BirdX = x;
-
-								BirdY = y + 3;
-
-								return;
-							}
-						}
-						else
-						{
-							return;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	bool GameOver()
-	{
-		int f = 0;
-
-		if (BirdY > 19)
-		{
-			ScreenParticles[BirdX][19] = '*';
-
-			ScreenParticles[BirdX][20] = '-';
-
-			f = 1;
-		}
-		else
-		{
-			if (ScreenCheck[BirdX][BirdY] > 0 && (ScreenParticles[BirdX][BirdY] == '|' || ScreenParticles[BirdX][BirdY] == '*'))
-			{
-				ScreenParticles[BirdX][BirdY] = '|';
-
-				ScreenParticles[BirdX - 1][19] = '*';
-
-				f = 1;
-			}
-		}
-		return f == 1;
-	}
-};
 int main()
 {
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -184,8 +62,6 @@ int main()
 	SetConsoleOutputCP(1251);
 
 	srand(time(0));
-
-	/*manager->InputHighscore();*/
 
 	manager->InputHighscore();
 
@@ -216,18 +92,9 @@ int main()
 
 			if (Selection == 'n')
 				goto quit;
-
-			// else goto play;
 		}
 
 	play:
-
-		/*HANDLE hd = GetStdHandle(STD_OUTPUT_HANDLE);
-		COORD cd;
-		cd.X = 0;
-		cd.Y = 0;
-
-		SetConsoleCursorPosition(hd, cd);*/
 
 		Menu();
 
@@ -295,8 +162,6 @@ void Game()
 
 	while (true)
 	{
-		Bird bird;
-
 		Sleep(0.15 * 1000);
 
 		Time++;
@@ -306,7 +171,7 @@ void Game()
 			const char s = _getch();
 
 			if (s != '~')
-				tuk = 1;
+				bird->SetTuk(1);
 		}
 
 		for (x = 0; x < 30; x++)
@@ -316,13 +181,13 @@ void Game()
 			ScreenCheck[x][20] = 2;
 		}
 
-		bird.BirdMovement();
-		int x;
-		x = bird.BirdX;
+		bird->BirdMovement(ScreenParticles);
 
-		manager->CheckScore(ScreenParticles, x);
+		int birdX = bird->GetBirdX();
 
-		if (bird.GameOver())
+		manager->CheckScore(ScreenParticles, birdX);
+
+		if (bird->GameOver(ScreenParticles, ScreenCheck))
 		{
 			system("cls");
 			goto gameEnd;
@@ -332,11 +197,7 @@ void Game()
 		manager->CheckingScore();
 		Screen();
 
-		if (tuk > 0)
-			tuk++;
-
-		if (tuk == 3)
-			tuk = 0;
+		bird->JumpBird();
 	}
 gameEnd:
 	{
@@ -371,8 +232,6 @@ void Screen()
 	cout << "" << endl;
 
 	cout << "Ваш счёт: " << manager->GetScore();
-
-	//SetColor(11);
 }
 
 void Pipes()

@@ -21,9 +21,15 @@
     <ClCompile Include="Managers.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Birds.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Managers.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
+    <ClInclude Include="Birds.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>

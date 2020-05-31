@@ -138,10 +138,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Birds.cpp" />
     <ClCompile Include="CourseWork.cpp" />
     <ClCompile Include="Managers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Birds.h" />
     <ClInclude Include="Managers.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

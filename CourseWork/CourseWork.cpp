@@ -15,13 +15,16 @@ ofstream Output;
 
 char ScreenParticles[30][21]; // переменная для хранения частиц экрана (пикселей)
 
-int ScreenScheck[30][21];
+int ScreenCheck[30][21];
 
 int Highscore;
 
 int NumberOfDifficulty;
 
-int tuk = 0, Score = 0, t = 0, bt = 0, BirdX = 0, BirdY = 0;
+int tuk = 0;
+int Score = 0;
+int Time = 0;// переменная для проверки сколько раз был пройден цикл while
+int bt = 0;
 
 bool ErrorDetection;
 
@@ -31,13 +34,11 @@ void Screen();
 
 void Pipes();
 
-void Bird();
-
 bool GameOver();
 
 void CheckScore();
 
-void SetColor();
+void SetColor(int);
 
 void SetBackColor();
 
@@ -47,6 +48,140 @@ void Difficulty();
 
 void EndGame();
 
+class Bird
+{
+public:
+	int BirdX = 0;
+	int BirdY = 0;
+	int x, y;
+
+	void BirdMovement()
+	{
+		if (tuk > 0)
+		{
+			bt = 0;
+
+			for (y = 0; y < 20; y++)
+			{
+				for (x = 0; x < 30; x++)
+				{
+					if (ScreenParticles[x][y] == '*')
+					{
+						if (y > 0)
+						{
+							ScreenParticles[x][y - 1] = '*';
+
+							ScreenParticles[x][y] = ' ';
+
+							BirdX = x;
+
+							BirdY = y - 1;
+
+							return;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			bt++;
+
+			for (y = 0; y < 20; y++)
+			{
+				for (x = 0; x < 30; x++)
+				{
+					if (ScreenParticles[x][y] == '*')
+					{
+						if (y < 20)
+						{
+							if (bt < 3)
+							{
+								ScreenParticles[x][y + 1] = '*';
+
+								ScreenParticles[x][y] = ' ';
+
+								BirdX = x;
+
+								BirdY = y + 1;
+
+								return;
+							}
+							else if (bt > 2 && bt < 5)
+							{
+								ScreenParticles[x][y + 2] = '*';
+
+								ScreenParticles[x][y] = ' ';
+
+								BirdX = x;
+
+								BirdY = y + 2;
+
+								return;
+							}
+							else if (bt > 4)
+							{
+								ScreenParticles[x][y + 3] = '*';
+
+								ScreenParticles[x][y] = ' ';
+
+								BirdX = x;
+
+								BirdY = y + 3;
+
+								return;
+							}
+						}
+						else
+						{
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
+	void CheckScore()
+	{
+		for (int y = 0; y < 20; y++)
+		{
+			if (ScreenParticles[BirdX][y] == '|')
+			{
+				Score++;
+
+				return;
+			}
+		}
+	}
+	bool GameOver()
+	{
+		int f = 0;
+
+		if (BirdY > 19)
+		{
+			ScreenParticles[BirdX][19] = '*';
+
+			ScreenParticles[BirdX][20] = '-';
+
+			f = 1;
+		}
+		else
+		{
+			if (ScreenCheck[BirdX][BirdY] > 0 && (ScreenParticles[BirdX][BirdY] == '|' || ScreenParticles[BirdX][BirdY] == '*'))
+			{
+				ScreenParticles[BirdX][BirdY] = '|';
+
+				ScreenParticles[BirdX - 1][19] = '*';
+
+				f = 1;
+			}
+		}
+		return f == 1;
+	}
+};
+class Manager
+{
+};
 int main()
 {
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -171,13 +306,13 @@ void Game()
 			{
 				ScreenParticles[x][y] = ' ';
 
-				ScreenScheck[x][y] = 0;
+				ScreenCheck[x][y] = 0;
 			}
 			if (y == 20)
 			{
 				ScreenParticles[x][y] = '-';
 
-				ScreenScheck[x][y] = 2;
+				ScreenCheck[x][y] = 2;
 			}
 		}
 	}
@@ -188,9 +323,11 @@ void Game()
 
 	while (true)
 	{
+		Bird bird;
+
 		Sleep(0.15 * 1000);
 
-		t++;
+		Time++;
 
 		if (_kbhit())
 		{
@@ -204,14 +341,14 @@ void Game()
 		{
 			ScreenParticles[x][20] = '-';
 
-			ScreenScheck[x][20] = 2;
+			ScreenCheck[x][20] = 2;
 		}
 
-		Bird();
+		bird.BirdMovement();
 
-		CheckScore();
+		bird.CheckScore();
 
-		if (GameOver() == true)
+		if (bird.GameOver())
 		{
 			system("cls");
 
@@ -283,14 +420,14 @@ void Pipes()
 
 	if (NumberOfDifficulty == 1)
 	{
-		if (t == 10)
+		if (Time == 10)
 		{
 			RandomHole = (rand() % 11) + 5; //генерирует рандомной число, которое будет отвечать где устанвоится дыра для труб
 			for (y = 0; y < 20; y++)
 			{
 				ScreenParticles[29][y] = '|';
 
-				ScreenScheck[29][y] = 2;
+				ScreenCheck[29][y] = 2;
 			}
 			ScreenParticles[29][RandomHole - 1] = ' ';
 
@@ -298,11 +435,11 @@ void Pipes()
 
 			ScreenParticles[29][RandomHole + 1] = ' ';
 
-			ScreenScheck[29][RandomHole - 1] = 0;
+			ScreenCheck[29][RandomHole - 1] = 0;
 
-			ScreenScheck[29][RandomHole] = 0;
+			ScreenCheck[29][RandomHole] = 0;
 
-			ScreenScheck[29][RandomHole + 1] = 0;
+			ScreenCheck[29][RandomHole + 1] = 0;
 
 			ScreenParticles[29][RandomHole - 2] = ' ';
 
@@ -310,7 +447,7 @@ void Pipes()
 
 			ScreenParticles[29][RandomHole + 2] = ' ';
 
-			t = 0;
+			Time = 0;
 
 			goto ed;
 		}
@@ -327,18 +464,18 @@ void Pipes()
 						{
 							ScreenParticles[x - 1][y] = '|';
 
-							ScreenScheck[x - 1][y] = 2;
+							ScreenCheck[x - 1][y] = 2;
 
 							ScreenParticles[x][y] = ' ';
 
-							ScreenScheck[x][y] = 0;
+							ScreenCheck[x][y] = 0;
 						}
 
 						if (x == 0)
 						{
 							ScreenParticles[x][y] = ' ';
 
-							ScreenScheck[x][y] = 0;
+							ScreenCheck[x][y] = 0;
 						}
 					}
 				}
@@ -347,7 +484,7 @@ void Pipes()
 	}
 	else if (NumberOfDifficulty == 2)
 	{
-		if (t == 10)
+		if (Time == 10)
 		{
 			RandomHole = (rand() % 11) + 5;//генерирует рандомной число, которое будет отвечать где устанвоится дыра для труб
 
@@ -355,7 +492,7 @@ void Pipes()
 			{
 				ScreenParticles[29][y] = '|';
 
-				ScreenScheck[29][y] = 2;
+				ScreenCheck[29][y] = 2;
 			}
 			ScreenParticles[29][RandomHole - 1] = ' ';
 
@@ -363,13 +500,13 @@ void Pipes()
 
 			ScreenParticles[29][RandomHole + 1] = ' ';
 
-			ScreenScheck[29][RandomHole - 1] = 0;
+			ScreenCheck[29][RandomHole - 1] = 0;
 
-			ScreenScheck[29][RandomHole] = 0;
+			ScreenCheck[29][RandomHole] = 0;
 
-			ScreenScheck[29][RandomHole + 1] = 0;
+			ScreenCheck[29][RandomHole + 1] = 0;
 
-			t = 0;
+			Time = 0;
 
 			goto md;
 		}
@@ -386,17 +523,17 @@ void Pipes()
 						{
 							ScreenParticles[x - 1][y] = '|';
 
-							ScreenScheck[x - 1][y] = 2;
+							ScreenCheck[x - 1][y] = 2;
 
 							ScreenParticles[x][y] = ' ';
 
-							ScreenScheck[x][y] = 0;
+							ScreenCheck[x][y] = 0;
 						}
 						if (x == 0)
 						{
 							ScreenParticles[x][y] = ' ';
 
-							ScreenScheck[x][y] = 0;
+							ScreenCheck[x][y] = 0;
 						}
 					}
 				}
@@ -405,7 +542,7 @@ void Pipes()
 	}
 	else if (NumberOfDifficulty == 3)
 	{
-		if (t == 10)
+		if (Time == 10)
 		{
 			RandomHole = (rand() % 11) + 7;//генерирует рандомной число, которое будет отвечать где устанвоится дыра для труб
 
@@ -414,19 +551,19 @@ void Pipes()
 			{
 				ScreenParticles[29][y] = '|';
 
-				ScreenScheck[29][y] = 2;
+				ScreenCheck[29][y] = 2;
 			}
 			ScreenParticles[29][RandomHole - 1] = ' ';
 
 			ScreenParticles[29][RandomHole] = ' ';
 
-			ScreenScheck[29][RandomHole - 1] = 0;
+			ScreenCheck[29][RandomHole - 1] = 0;
 
-			ScreenScheck[29][RandomHole] = 0;
+			ScreenCheck[29][RandomHole] = 0;
 
-			ScreenScheck[29][RandomHole + 1] = 0;
+			ScreenCheck[29][RandomHole + 1] = 0;
 
-			t = 0;
+			Time = 0;
 
 			goto hd;
 		}
@@ -443,17 +580,17 @@ void Pipes()
 						{
 							ScreenParticles[x - 1][y] = '|';
 
-							ScreenScheck[x - 1][y] = 2;
+							ScreenCheck[x - 1][y] = 2;
 
 							ScreenParticles[x][y] = ' ';
 
-							ScreenScheck[x][y] = 0;
+							ScreenCheck[x][y] = 0;
 						}
 						if (x == 0)
 						{
 							ScreenParticles[x][y] = ' ';
 
-							ScreenScheck[x][y] = 0;
+							ScreenCheck[x][y] = 0;
 						}
 					}
 				}
@@ -462,142 +599,6 @@ void Pipes()
 	}
 }
 
-void Bird()
-{
-	int x, y;
-
-	if (tuk > 0)
-	{
-		bt = 0;
-
-		for (y = 0; y < 20; y++)
-		{
-			for (x = 0; x < 30; x++)
-			{
-				if (ScreenParticles[x][y] == '*')
-				{
-					if (y > 0)
-					{
-						ScreenParticles[x][y - 1] = '*';
-
-						ScreenParticles[x][y] = ' ';
-
-						BirdX = x;
-
-						BirdY = y - 1;
-
-						return;
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		bt++;
-
-		for (y = 0; y < 20; y++)
-		{
-			for (x = 0; x < 30; x++)
-			{
-				if (ScreenParticles[x][y] == '*')
-				{
-					if (y < 20)
-					{
-						if (bt < 3)
-						{
-							ScreenParticles[x][y + 1] = '*';
-
-							ScreenParticles[x][y] = ' ';
-
-							BirdX = x;
-
-							BirdY = y + 1;
-
-							return;
-						}
-						else if (bt > 2 && bt < 5)
-						{
-							ScreenParticles[x][y + 2] = '*';
-
-							ScreenParticles[x][y] = ' ';
-
-							BirdX = x;
-
-							BirdY = y + 2;
-
-							return;
-						}
-						else if (bt > 4)
-						{
-							ScreenParticles[x][y + 3] = '*';
-
-							ScreenParticles[x][y] = ' ';
-
-							BirdX = x;
-
-							BirdY = y + 3;
-
-							return;
-						}
-					}
-					else
-					{
-						return;
-					}
-				}
-			}
-		}
-	}
-}
-void CheckScore()
-{
-	int y;
-
-	for (y = 0; y < 20; y++)
-	{
-		if (ScreenParticles[BirdX][y] == '|')
-		{
-			Score++;
-
-			return;
-		}
-	}
-}
-
-bool GameOver()
-{
-	int f = 0;
-
-	if (BirdY > 19)
-	{
-		ScreenParticles[BirdX][19] = '*';
-
-		ScreenParticles[BirdX][20] = '-';
-
-		f = 1;
-
-		goto quit;
-	}
-	else
-	{
-		if (ScreenScheck[BirdX][BirdY] > 0 && (ScreenParticles[BirdX][BirdY] == '|' || ScreenParticles[BirdX][BirdY] == '*'))
-		{
-			ScreenParticles[BirdX][BirdY] = '|';
-
-			ScreenParticles[BirdX - 1][19] = '*';
-
-			f = 1;
-
-			goto quit;
-		}
-	}
-quit:
-	if (f == 1)
-		return true;
-	else
-		return false;
-}
 void SetColor(int colorID)
 {
 	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), colorID);
@@ -613,25 +614,22 @@ void SetBackColor()
 
 		BACKGROUND_RED);
 }
-void EndGame()
+
+void moveto(const int x, int y)
 {
-	Screen();
-	cout << "" << endl << endl;
-	cout << " --------------------------------------------------------------------------" << endl;
-	cout << "|    *****      *     *       * ******       ****  *       * ***** ****    |" << endl;
-	cout << "|   *          * *    * *   * * *           *    *  *     *  *     *   *   |" << endl;
-	cout << "|   *  ****   *   *   *  * *  * *****       *    *   *   *   ****  ****    |" << endl;
-	cout << "|   *  *  *  *******  *   *   * *           *    *    * *    *     * *     |" << endl;
-	cout << "|    *****  *       * *       * ******       ****      *     ***** *   *   |" << endl;
-	cout << " --------------------------------------------------------------------------" << endl;
-	cout << "" << endl << endl;
-	cout << "                        В А Ш  С Ч Ё Т  : " << Score << endl << endl;
-	cout << "                        М А К С И М А Л Ь Н Ы Й Р Е К О Р Д : " << Highscore << endl;
-	cout << "" << endl << endl;
+	COORD coord;
+
+	HANDLE HStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (HStdOut == INVALID_HANDLE_VALUE)
+		return;
+	coord.X = x;
+	coord.Y = y;
+	SetConsoleCursorPosition(HStdOut, coord);
 }
 
 void Menu()
 {
+	SetColor(5);
 	cout << "" << endl;
 	cout << " --------------------------------------------------------  " << endl;
 	cout << "|                                                        | " << endl;
@@ -642,20 +640,45 @@ void Menu()
 	cout << "|   *    **** *  * *    *      *      ***  * *  * ***    | " << endl;
 	cout << "|                                                        | " << endl;
 	cout << " --------------------------------------------------------  " << endl;
-	cout << "" << endl << endl;
-	cout << "                     Рекорд:  " << Highscore << endl << endl;
-	cout << "" << endl << endl;
-	cout << "                     М Е Н Ю:    " << endl << endl;
-	cout << "                  1: Начать игру  " << endl << endl;
-
-	cout << "                  2: Выход        " << endl << endl;
+	SetColor(15);
+	moveto(20, 10);
+	cout << "Рекорд: " << Highscore;
+	moveto(20, 12);
+	cout << "Меню";
+	SetColor(11);
+	moveto(20, 14);
+	cout << "1: Начать игру" << "\n";
+	SetColor(12);
+	moveto(20, 16);
+	cout << "2: Выход" << "\n";
+	SetColor(15);
 }
 void Difficulty()
 {
+	SetColor(5);
 	cout << "--------------------------------------------------------" << endl;
 	cout << "|                Выберите сложность:                    |" << endl;
 	cout << "|                    1 - Лёгкий                         |" << endl;
 	cout << "|                    2 - Средний                        |" << endl;
 	cout << "|                    3 - Сложный                        |" << endl;
 	cout << "--------------------------------------------------------  " << endl;
+	SetColor(15);
+}
+void EndGame()
+{
+	SetColor(12);
+	cout << "" << endl << endl;
+	cout << " --------------------------------------------------------------------------" << endl;
+	cout << "|    *****      *     *       * ******       ****  *       * ***** ****    |" << endl;
+	cout << "|   *          * *    * *   * * *           *    *  *     *  *     *   *   |" << endl;
+	cout << "|   *  ****   *   *   *  * *  * *****       *    *   *   *   ****  ****    |" << endl;
+	cout << "|   *  *  *  *******  *   *   * *           *    *    * *    *     * *     |" << endl;
+	cout << "|    *****  *       * *       * ******       ****      *     ***** *   *   |" << endl;
+	cout << " --------------------------------------------------------------------------" << endl;
+	SetColor(3);
+	moveto(30, 10);
+	cout << "Ваш счёт: " << Score << "\n";
+
+	moveto(30, 12);
+	cout << "Максимальный рекорд: " << Highscore << endl << endl;
 }

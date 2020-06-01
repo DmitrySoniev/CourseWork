@@ -89,7 +89,7 @@ void Birds::BirdMovement(char ScreenParticles[30][21])
 							return;
 						}
 					}
-					else // Если птица уже на земле, функция возвращает для проверки закончена ли игра
+					else
 					{
 						return;
 					}

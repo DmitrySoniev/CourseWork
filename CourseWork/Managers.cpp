@@ -18,7 +18,6 @@ int Managers::CheckingScore()
 		Highscore = Score;
 		return Highscore;
 	}
-	return 0;
 }
 
 void Managers::SetScore(int score)
@@ -43,10 +42,6 @@ void Managers::InputHighscore()
 
 		ErrorDetection = true;
 	}
-}
-bool Managers::GetErrorDetection()
-{
-	return ErrorDetection;
 }
 
 int Managers::GetHighScore()

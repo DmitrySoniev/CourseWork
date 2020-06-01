@@ -21,7 +21,5 @@ public:
 
 	int GetScore();
 
-	bool GetErrorDetection();
-
 	void CheckScore(char[30][21], int);
 };

@@ -13,13 +13,11 @@ using namespace std;
 
 char ScreenParticles[30][21]; // переменная для хранения частиц экрана (пикселей)
 
-int ScreenCheck[30][21];
+int ScreenCheck[30][21]; // переменная для проверки взаимодействия с трубами
 
 int NumberOfDifficulty;
 
 int Time = 0;// переменная для проверки сколько раз был пройден цикл while
-
-bool ErrorDetection;
 
 void Game();
 
@@ -56,8 +54,6 @@ int main()
 	SetConsoleCP(1251);
 
 	SetConsoleOutputCP(1251);
-
-	srand(time(0));
 
 	manager->InputHighscore();
 
@@ -204,6 +200,8 @@ gameEnd:
 
 void Screen()
 {
+	SetColor(3);
+
 	HANDLE Handle = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	COORD Coordinates;
@@ -245,7 +243,7 @@ void Pipes()
 
 				ScreenCheck[29][y] = 2;
 			}
-			ScreenParticles[29][RandomHole - 1] = ' ';// устанавливает трубу
+			ScreenParticles[29][RandomHole - 1] = ' ';// устанавливает дыру в трубе
 
 			ScreenParticles[29][RandomHole] = ' ';
 
